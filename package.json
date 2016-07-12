@@ -8,6 +8,7 @@
     "browserify": "mkdir dist; browserify index.js --standalone AsToken -o dist/as-token.js",
     "coverage": "istanbul cover --recursive jasmine-node .; istanbul check-coverage  --statements 100 --functions 94 --branches 86 --lines 100",
     "lint": "jshint *.js test/*.js",
+    "postinstall": "bower install",
     "test": "jasmine-node .",
     "test:browser": "open SpecRunner.html"
   },
