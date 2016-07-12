@@ -65,7 +65,7 @@ describe('AsToken', function() {
 
     var bearerToken = 'Bearer ' + AsToken.config.jwt.prefix + AsToken.jsonwebtoken.sign(json, AsToken.config.test.private, {
       algorithm: AsToken.config.jwt.algorithm,
-      expiresIn: 1 // minutes
+      expiresIn: 2 // minutes
     });
     console.log(bearerToken);
 
