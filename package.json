@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Example client side or server side token verificaiton library for authenticated systems workshop",
   "main": "index.js",
+  "repository": "https://github.com/cesine/as-token-javascript.git",
   "scripts": {
     "browserify": "mkdir dist; browserify index.js --standalone AsToken -o dist/as-token.js",
     "coverage": "istanbul cover --recursive jasmine-node .; istanbul check-coverage  --statements 100 --functions 94 --branches 86 --lines 100",
@@ -18,10 +19,8 @@
   "author": "cesine <cesine@yahoo.com>",
   "license": "MIT",
   "devDependencies": {
-    "fetch-mock": "^4.6.0",
     "istanbul": "^0.4.4",
-    "jasmine-node": "^1.14.5",
-    "node-fetch": "^1.5.3"
+    "jasmine-node": "^1.14.5"
   },
   "dependencies": {
     "jsonwebtoken": "^7.1.3"
