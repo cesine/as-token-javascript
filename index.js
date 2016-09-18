@@ -11,7 +11,7 @@ var AsToken = {
 
     return this.config.jwt.prefix + jsonwebtoken.sign(json, this.config.jwt.private, {
       algorithm: this.config.jwt.algorithm,
-      expiresIn: expiresIn || 60 // minutes
+      expiresIn: expiresIn === undefined ? 60 : expiresIn // minutes
     });
   },
   verify: function(token) {
