@@ -41,17 +41,23 @@ describe('AsToken', function() {
           url: 'http://localhost:3000'
         }
       };
-
-      var token = AsToken.config.jwt.prefix + AsToken.jsonwebtoken.sign(json, AsToken.config.test.private, {
-        algorithm: AsToken.config.jwt.algorithm,
-        expiresIn: 60 // minutes
-      });
+      AsToken.config.jwt.private = AsToken.config.test.private;
+      var token = AsToken.sign(json);
       expect(token).toBeDefined();
+      expect(token).toContain(AsToken.config.jwt.prefix);
       expect(token.length).toBeGreaterThan(300);
     });
   });
 
   describe('verify token', function() {
+    beforeEach(function() {
+      AsToken.config.jwt.private = AsToken.config.test.private;
+    });
+
+    afterEach(function() {
+      delete AsToken.config.jwt.private;
+    });
+
     var json = {
       username: 'anonymous',
       client_id: 'abc123',
@@ -63,16 +69,11 @@ describe('AsToken', function() {
       ]
     };
 
-    var bearerToken = 'Bearer ' + AsToken.config.jwt.prefix + AsToken.jsonwebtoken.sign(json, AsToken.config.test.private, {
-      algorithm: AsToken.config.jwt.algorithm,
-      expiresIn: 2 // minutes
-    });
-    console.log(bearerToken);
+    it('should verify the token and return contents', function() {
+      var bearerToken = 'Bearer ' + AsToken.sign(json);
+      console.log(bearerToken);
 
-    it('should decode into json', function() {
-      var token = bearerToken.replace(new RegExp('Bearer ' + AsToken.config.jwt.prefix), '');
-
-      var decoded = AsToken.jsonwebtoken.decode(token);
+      var decoded = AsToken.verify(bearerToken);
       expect(decoded).toEqual({
         username: 'anonymous',
         client_id: 'abc123',
@@ -90,29 +91,16 @@ describe('AsToken', function() {
       expect(new Date(decoded.exp * 1000).getFullYear()).toEqual(new Date().getFullYear());
     });
 
-    it('should verify the token\s content', function() {
-      var token = bearerToken.replace(new RegExp('Bearer ' + AsToken.config.jwt.prefix), '');
-
-      var verified = AsToken.jsonwebtoken.verify(token, AsToken.config.test.public, {
-        algorithm: AsToken.config.jwt.algorithm
-      });
-
-      expect(verified).toBeDefined();
-      console.log(verified);
-      expect(verified.username).toEqual('anonymous');
-    });
-
     it('should throw if token is expired', function() {
       var expired = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhpIiwic2Vydm' +
         'VyIjp7InVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJ9LCJpYXQiOjE0NjgzMzMyNDgs' +
         'ImV4cCI6MTQ2ODMzMzMwOH0.nwzdDX3VXC2wxgQVir0IbH8V8Kpafdda4fz3mB__0qSt8Y' +
         'jHkwoLgzHsI7g_40dfVkyTj4GPbAqyKMDKhNlWrxZzIdUJnIye9o8tH2NwzxA9n7lB6T2a' +
-        'sBE-YauzF5P7Pjdi4NY6zkDMf5AUNzeAy2kpdQUtiG483NeEX5HpOAg'
+        'sBE-YauzF5P7Pjdi4NY6zkDMf5AUNzeAy2kpdQUtiG483NeEX5HpOAg';
 
       try {
-        var verified = AsToken.jsonwebtoken.verify(expired, AsToken.config.test.public, {
-          algorithm: AsToken.config.jwt.algorithm
-        });
+        var verified = AsToken.verify(expired);
+        throw verified;
       } catch (err) {
         expect(err.message).toEqual('jwt expired');
       }
@@ -129,7 +117,7 @@ describe('AsToken', function() {
         'zcDlRDOvOsyUhc2CAtCToblp1vhU';
 
       try {
-        var decoded = AsToken.jsonwebtoken.decode(mutated);
+        var decoded = AsToken.decode(mutated);
         expect(decoded).toEqual({
           username: 'anonymous',
           client_id: 'abc123',
@@ -143,9 +131,7 @@ describe('AsToken', function() {
           ]
         });
 
-        var verified = AsToken.jsonwebtoken.verify(mutated, AsToken.config.test.public, {
-          algorithm: AsToken.config.jwt.algorithm
-        });
+        var verified = AsToken.verify(mutated);
       } catch (err) {
         expect(err.message).toEqual('invalid signature');
       }
@@ -156,9 +142,8 @@ describe('AsToken', function() {
       var broken = 'eyJhbp1vhU';
 
       try {
-        var verified = AsToken.jsonwebtoken.verify(broken, AsToken.config.test.public, {
-          algorithm: AsToken.config.jwt.algorithm
-        });
+        var verified = AsToken.verify(broken);
+        throw verified;
       } catch (err) {
         expect(err.message).toEqual('jwt malformed');
       }
